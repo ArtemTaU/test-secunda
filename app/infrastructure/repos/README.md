@@ -100,3 +100,19 @@ VALUES
   (4, '8-812-333-33-33'),
 
   (5, '8-812-444-44-44');
+
+INSERT INTO organization_activities (organization_id, activity_id)
+SELECT o.id, a.id
+FROM ins_org o
+JOIN (VALUES
+  ('ООО "Рога и Копыта"', 'Молочная продукция'),
+  ('ООО "Рога и Копыта"', 'Мясная продукция'),
+  ('ИП "Молочный дом"', 'Молочная продукция'),
+  ('ООО "Мясной двор"', 'Мясная продукция'),
+  ('ООО "АвтоМир"', 'Грузовые'),
+  ('ООО "АвтоМир"', 'Легковые'),
+  ('ООО "Запчасть-Сервис"', 'Запчасти')
+) AS x(org_name, activity_name)
+  ON x.org_name = o.name
+JOIN activities a
+  ON a.name = x.activity_name;

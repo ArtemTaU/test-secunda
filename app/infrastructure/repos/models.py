@@ -132,8 +132,6 @@ class Organization(Base):
         Index("ix_org_name", "name"),
     )
 
-    def __repr__(self) -> str:
-        return f"Organization(id={self.id}, name={self.name!r}, address_id={self.address_id})"
 
 
 class OrganizationPhone(Base):
