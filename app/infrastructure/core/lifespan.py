@@ -5,7 +5,6 @@ from sqlalchemy import text
 
 from .config import Settings
 from .logging import setup_logging
-from app.infrastructure.repos.session import Base
 from app.infrastructure.repos.utils import build_db_url
 from app.infrastructure.repos import async_session, async_engine
 
@@ -40,9 +39,6 @@ async def lifespan(app: FastAPI):
     async with aengine.begin() as conn:
         await conn.execute(text("SELECT 1"))
     log.info("DB ping OK")
-
-    async with aengine.begin() as conn:
-        await conn.run_sync(Base.metadata.create_all)
 
     try:
         yield

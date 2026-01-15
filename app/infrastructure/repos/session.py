@@ -4,9 +4,6 @@ from sqlalchemy.ext.asyncio import (
     AsyncSession,
     async_sessionmaker,
 )
-from sqlalchemy.orm import declarative_base
-
-Base = declarative_base()
 
 
 def async_engine(db_url) -> AsyncEngine:
