@@ -39,3 +39,8 @@ class OrgsInBuildingResponse(BaseModel):
 
 class AddressesResponse(BaseModel):
     addresses: list[AddressOut]
+
+
+class AddressesWithOrganizationsResponse(BaseModel):
+    addresses: list[AddressOut]
+    organizations: list[OrganizationOut]

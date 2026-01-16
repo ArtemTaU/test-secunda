@@ -28,6 +28,7 @@ def create_app() -> FastAPI:
         lifespan=lifespan,
         root_path=settings.root_path or "",
     )
+
     fastapi_app.include_router(orgs_router)
     fastapi_app.include_router(addresses_router)
 
