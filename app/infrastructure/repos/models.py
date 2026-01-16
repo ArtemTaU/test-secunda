@@ -40,7 +40,7 @@ class Activity(Base):
     __tablename__ = "activities"
 
     id: Mapped[int] = mapped_column(primary_key=True)
-    name: Mapped[str] = mapped_column(nullable=False)
+    name: Mapped[str] = mapped_column(nullable=False, unique=True)
 
     parent_id: Mapped[Optional[int]] = mapped_column(
         ForeignKey("activities.id", ondelete="CASCADE"),
@@ -100,7 +100,7 @@ class Organization(Base):
     __tablename__ = "organizations"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    name: Mapped[str] = mapped_column(Text, nullable=False)
+    name: Mapped[str] = mapped_column(Text, nullable=False, unique=True)
 
     address_id: Mapped[int] = mapped_column(
         ForeignKey("addresses.id", ondelete="RESTRICT"),
@@ -156,3 +156,11 @@ class OrganizationPhone(Base):
         UniqueConstraint("organization_id", "phone", name="uq_org_phone"),
         Index("ix_org_phone_phone", "phone"),
     )
+
+
+__all__ = [
+    "Organization",
+    "OrganizationPhone",
+    "Activity",
+    "Address",
+]

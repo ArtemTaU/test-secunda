@@ -4,7 +4,7 @@ from starlette.middleware import Middleware
 
 from app.infrastructure.core import settings
 from app.infrastructure.core import lifespan
-from app.presentation.api.routers import orgs_router
+from app.api.routers import orgs_router, addresses_router
 
 
 def create_app() -> FastAPI:
@@ -29,6 +29,7 @@ def create_app() -> FastAPI:
         root_path=settings.root_path or "",
     )
     fastapi_app.include_router(orgs_router)
+    fastapi_app.include_router(addresses_router)
 
     if settings.debug:
         @fastapi_app.get("/info")
