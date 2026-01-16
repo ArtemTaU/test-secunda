@@ -38,14 +38,7 @@ class Settings(BaseSettings):
         env="DB_PASS",
         json_schema_extra={"x-sensitive": True},
     )
-    db_url: Optional[int] = Field(default=None, env="DB_URL")
-
-    s3_access_key: str | None = None
-    s3_secret_key: str | None = None
-    s3_bucket_name: str | None = None
-    s3_endpoint_url: str = "https://s3.storage.selcloud.ru"
-    s3_objects_url:  str | None = None
-    s3_folder_name: str | None = None
+    db_url: Optional[str] = Field(default=None, env="DB_URL")
 
     model_config = SettingsConfigDict(
         env_file=str(ENV_PATH),

@@ -181,7 +181,6 @@ async def get_addresses_near(
         addresses = await address_repo.list_within_radius(lat, lon, radius_m, limit=limit, offset=offset)
         address_ids = [a.id for a in addresses]
         orgs = await org_repo.list_by_addresses_ids(address_ids)
-        request.app.state.logger.debug(orgs)
     except SQLAlchemyError as e:
         request.app.state.logger.exception("DB error while fetching addresses/orgs near point", exc_info=e)
         raise HTTPException(status_code=500, detail="Ошибка базы данных.")
