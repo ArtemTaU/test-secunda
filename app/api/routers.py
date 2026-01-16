@@ -1,15 +1,14 @@
-from fastapi import APIRouter, Request, Depends, HTTPException
+from fastapi import APIRouter, Request, Depends, HTTPException, Path
 
 from app.infrastructure.dependencies import get_db
 from .mappers.addresses import addresses_to_out
-from .mappers.organizations import orgs_to_out
-from .openapi import CHECK_ORGS_IN_BUILDING, GET_ALL_ORGS, GET_ALL_ADDRESSES
-from app.api.schemas import OrgsInBuildingResponse, BuildingAddressQuery, AddressOut, AddressesResponse
+from .mappers.organizations import orgs_to_out, org_to_out
+from .openapi import CHECK_ORGS_IN_BUILDING, GET_ALL_ORGS, GET_ALL_ADDRESSES, GET_ORG_BY_ID
+from app.api.schemas import OrgsInBuildingResponse, BuildingAddressQuery, AddressOut, AddressesResponse, OrganizationOut
 from app.infrastructure.repos.cruds import AddressRepository, OrganizationRepository
 
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.exc import SQLAlchemyError
-
 
 orgs_router = APIRouter(prefix="/orgs")
 addresses_router = APIRouter(prefix="/addresses")
@@ -21,8 +20,8 @@ addresses_router = APIRouter(prefix="/addresses")
     **GET_ALL_ORGS,
 )
 async def get_all_orgs(
-    request: Request,
-    session: AsyncSession = Depends(get_db),
+        request: Request,
+        session: AsyncSession = Depends(get_db),
 ):
     org_repo = OrganizationRepository(session)
 
@@ -35,6 +34,28 @@ async def get_all_orgs(
     result = orgs_to_out(orgs)
     return {"organizations": result}
 
+
+@orgs_router.get(
+    "/{org_id}",
+    **GET_ORG_BY_ID,
+)
+async def get_org_by_id(
+    request: Request,
+    org_id: int = Path(..., ge=1, description="Идентификатор организации"),
+    session: AsyncSession = Depends(get_db),
+):
+    org_repo = OrganizationRepository(session)
+
+    try:
+        org = await org_repo.get_by_id(org_id)
+    except SQLAlchemyError as e:
+        request.app.state.logger.exception("DB error while fetching organization by id", exc_info=e)
+        raise HTTPException(status_code=500, detail="Ошибка базы данных.")
+
+    if org is None:
+        raise HTTPException(status_code=404, detail="Организация не найдена.")
+
+    return {"organization": org_to_out(org)}
 
 
 @orgs_router.get(
@@ -79,8 +100,8 @@ async def check_orgs_in_building(
     **GET_ALL_ADDRESSES,
 )
 async def get_all_addresses(
-    request: Request,
-    session: AsyncSession = Depends(get_db),
+        request: Request,
+        session: AsyncSession = Depends(get_db),
 ):
     address_repo = AddressRepository(session)
 
