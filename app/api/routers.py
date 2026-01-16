@@ -1,12 +1,14 @@
 from fastapi import APIRouter, Request, Depends, HTTPException
 
 from app.infrastructure.dependencies import get_db
+from .mappers.addresses import addresses_to_out
 from .mappers.organizations import orgs_to_out
-from .openapi import CHECK_ORGS_IN_BUILDING
-from app.api.schemas import OrgsInBuildingResponse, BuildingAddressQuery
+from .openapi import CHECK_ORGS_IN_BUILDING, GET_ALL_ORGS, GET_ALL_ADDRESSES
+from app.api.schemas import OrgsInBuildingResponse, BuildingAddressQuery, AddressOut, AddressesResponse
 from app.infrastructure.repos.cruds import AddressRepository, OrganizationRepository
 
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.exc import SQLAlchemyError
 
 
 orgs_router = APIRouter(prefix="/orgs")
@@ -16,26 +18,21 @@ addresses_router = APIRouter(prefix="/addresses")
 @orgs_router.get(
     "",
     response_model=OrgsInBuildingResponse,
-    #**GET_ALL_ORGS,
+    **GET_ALL_ORGS,
 )
 async def get_all_orgs(
     request: Request,
     session: AsyncSession = Depends(get_db),
 ):
     org_repo = OrganizationRepository(session)
-    orgs = await org_repo.list_all()
 
-    result = [
-        {
-            "id": o.id,
-            "name": o.name,
-            "address": o.address,
-            "phones": [p.phone for p in o.phones],
-            "activities": [a.name for a in o.activities],
-        }
-        for o in orgs
-    ]
+    try:
+        orgs = await org_repo.list_all()
+    except SQLAlchemyError as e:
+        request.app.state.logger.exception("DB error while fetching organizations", exc_info=e)
+        raise HTTPException(status_code=500, detail="Ошибка базы данных.")
 
+    result = orgs_to_out(orgs)
     return {"organizations": result}
 
 
@@ -78,26 +75,21 @@ async def check_orgs_in_building(
 
 @addresses_router.get(
     "",
-    #**GET_ALL_ADDRESSES,
+    response_model=AddressesResponse,
+    **GET_ALL_ADDRESSES,
 )
 async def get_all_addresses(
     request: Request,
     session: AsyncSession = Depends(get_db),
 ):
     address_repo = AddressRepository(session)
-    addresses = await address_repo.list_all()
 
-    result = [
-        {
-            "id": a.id,
-            "country": a.country,
-            "city": a.city,
-            "street": a.street,
-            "house": a.house,
-            "building": a.building,
-        }
-        for a in addresses
-    ]
+    try:
+        addresses = await address_repo.list_all()
+    except SQLAlchemyError as e:
+        request.app.state.logger.exception("DB error while fetching addresses", exc_info=e)
+        raise HTTPException(status_code=500, detail="Ошибка базы данных.")
 
+    result = addresses_to_out(addresses)
     request.app.state.logger.debug(f"Result: {result}")
     return {"addresses": result}

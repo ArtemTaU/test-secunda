@@ -11,11 +11,6 @@ class BuildingAddressQuery(BaseModel):
     building: int | None = Field(None, ge=1, examples=[2])
 
 
-# class OrgsInBuildingResponse(BaseModel):
-#     model_config = ConfigDict(extra="forbid")
-#
-#     organizations: list[str]
-
 class AddressOut(BaseModel):
     id: int
     country: str
@@ -40,3 +35,7 @@ class OrganizationOut(BaseModel):
 
 class OrgsInBuildingResponse(BaseModel):
     organizations: list[OrganizationOut]
+
+
+class AddressesResponse(BaseModel):
+    addresses: list[AddressOut]
